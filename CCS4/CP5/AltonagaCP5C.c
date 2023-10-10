@@ -24,35 +24,28 @@ struct person
     float height;
     float bmi;
     char category[TEXTSIZE];
-    node *next;
+    node next;
 } Person;
 
-typedef struct stack
-{
-    node *top;
-    bool isChecked;
-} Stack;
-
-void createStack(Stack *stack);
+void createStack(node *top, bool *isChecked);
 void push(node *top, node data);
+node pop(node *top);
+node peek(node *top);
 bool isEmpty(node *top);
-bool isFull(node *top);
-// void pop(node *top);
-// void displayTop(node *top);
-// void edit(node *top);
-// void delete(node *top);
-// void clear(node *top);
-int menu(void);
 
+int menu(void);
 char *categoryBMI(float bmi);
+
 void dataEntry(node *top);
+void dataEditByName(node *top);
+void dataDeleteByName(node *top);
+void topDisplay(node *top);
 void dataDisplay(node *top);
 
 int main(void)
 {
-    Stack stack;
-    stack.isChecked = false;
-    stack.top = NULL;
+    node top = NULL;
+    bool isChecked = false;
 
     int choice;
     do
@@ -61,27 +54,53 @@ int main(void)
         switch (choice)
         {
         case 1:
-            createStack(&stack);
+            createStack(&top, &isChecked);
             break;
         case 2:
-            dataEntry(&stack.top);
+            // check if stack exists
+            if (top == NULL && isChecked == false)
+            {
+                printf("Stack does not exist. Press any key to continue.\n");
+                getch();
+                break;
+            }
+            dataEntry(&top);
             break;
-
-        // case 3:
-        //     edit(&top);
-        //     break;
-        // case 4:
-        //     delete (&top);
-        //     break;
-        // case 5:
-        //     displayTop(&top);
-        //     break;
+        case 3:
+            // check if stack exists
+            if (top == NULL && isChecked == false)
+            {
+                printf("Stack does not exist. Press any key to continue.\n");
+                getch();
+                break;
+            }
+            dataEditByName(&top);
+            break;
+        case 4:
+            // check if stack exists
+            if (top == NULL && isChecked == false)
+            {
+                printf("Stack does not exist. Press any key to continue.\n");
+                getch();
+                break;
+            }
+            dataDeleteByName(&top);
+            break;
+        case 5:
+            // check if stack exists
+            if (top == NULL && isChecked == false)
+            {
+                printf("Stack does not exist. Press any key to continue.\n");
+                getch();
+                break;
+            }
+            topDisplay(&top);
+            break;
         case 6:
-            dataDisplay(&stack.top);
+            dataDisplay(&top);
             break;
-            // case 7:
-            //     clear(&top);
-            //     break;
+        case 7:
+            printf("Exiting the program...\n");
         }
     } while (choice != 7);
 
@@ -120,24 +139,52 @@ int menu(void)
 
 /*  function to create stack
     @param (node *) top
+    @param (bool *) isChecked
 */
-void createStack(Stack *stack)
+void createStack(node *top, bool *isChecked)
 {
-    // test cases:
-    // 1. stack already created
-    // 2. stack already created but has elements
-    // 3. stack created but not empty
-
-    if (stack->isChecked == true)
+    // check if stack already exists
+    if (*top == NULL && *isChecked == true)
     {
-        printf("Stack already created.\n");
+        printf("Stack already exists. Press any key to continue.\n");
         getch();
         return;
     }
 
-    stack->top = NULL;
-    stack->isChecked = true;
-    printf("Stack created.\n");
+    // check if stack has elements
+    if (*top != NULL && *isChecked == true)
+    {
+        printf("Stack has existing elements. Do you want to clear the stack? (y/n): ");
+        char choice;
+        do
+        {
+            scanf(" %c", &choice);
+            choice = tolower(choice);
+            if (choice != 'y' && choice != 'n')
+            {
+                printf("Invalid option. Please enter a valid option.\n");
+            }
+            if (choice == 'y')
+            {
+                *top = NULL;
+                printf("Stack has been cleared. Press any key to continue.\n");
+                getch();
+                return;
+            }
+            if (choice == 'n')
+            {
+                printf("Stack has not been cleared. Press any key to continue.\n");
+                getch();
+                return;
+            }
+        } while (choice != 'y' && choice != 'n');
+    }
+
+    // else if stack does not exist
+    *top = NULL;
+    *isChecked = true;
+    printf("Stack has been created. Press any key to continue.\n");
+    getch();
     return;
 }
 
@@ -146,9 +193,29 @@ void createStack(Stack *stack)
 */
 void push(node *top, node data)
 {
-    data->next = *top;
-    *top = data;
+    data->next = *top; // point node next to current top
+    *top = data;       // point top to new node
     return;
+}
+
+/*  function to pop element from stack
+    @param (node *) top
+    @returns (node) temp
+*/
+node pop(node *top)
+{
+    node temp = *top;
+    *top = (*top)->next;
+    return temp;
+}
+
+/*  function to peek top element of stack
+    @param (node *) top
+    @returns (node) temp
+*/
+node peek(node *top)
+{
+    return *top;
 }
 
 /*  function to check if stack is empty
@@ -157,36 +224,18 @@ void push(node *top, node data)
 */
 bool isEmpty(node *top)
 {
+    // if top is NULL, return true, else return false
     return *top == NULL ? true : false;
-}
-
-/*  function to check if stack is full
-    @param (node *) top
-    @returns (bool) isFull
-*/
-bool isFull(node *top)
-{
-    node temp = malloc(sizeof(Person));
-    if (temp == NULL)
-    {
-        return true;
-    }
-    else
-    {
-        free(temp);
-        return false;
-    }
 }
 
 void dataEntry(node *top)
 {
-
     node temp = malloc(sizeof(Person));
+    // if malloc fails, exit program
     if (temp == NULL)
     {
-        printf("Stack is full.\n");
-        getch();
-        return;
+        printf("Stack overflow. Exiting the program...\n");
+        exit(1);
     }
 
     char tempFirstName[TEXTSIZE];
@@ -196,11 +245,13 @@ void dataEntry(node *top)
     system("cls");
 
     printf("Enter first name: ");
-    gets(tempFirstName);
+    fgets(tempFirstName, TEXTSIZE, stdin);
+    tempFirstName[strcspn(tempFirstName, "\n")] = '\0'; // remove newline character
     strcpy(temp->firstName, tempFirstName);
 
     printf("Enter last name: ");
-    gets(tempLastName);
+    fgets(tempLastName, TEXTSIZE, stdin);
+    tempLastName[strcspn(tempLastName, "\n")] = '\0'; // remove newline character
     strcpy(temp->lastName, tempLastName);
 
     printf("Enter height (in cm): ");
@@ -216,7 +267,7 @@ void dataEntry(node *top)
 
     push(top, temp); // push to stack
 
-    printf("Data has been added.\n");
+    printf("Data has been added. Press any key to continue.\n");
     getch();
     return;
 }
@@ -245,29 +296,181 @@ char *categoryBMI(float bmi)
     }
 }
 
+void dataEditByName(node *top)
+{
+    // check if stack is empty
+    if (isEmpty(top))
+    {
+        printf("Stack is empty. Press any key to continue.\n");
+        getch();
+        return;
+    }
+
+    char tempFirstName[TEXTSIZE];
+    char tempLastName[TEXTSIZE];
+
+    fflush(stdin); // clear input buffer
+    system("cls");
+
+    printf("Enter first name: ");
+    fgets(tempFirstName, TEXTSIZE, stdin);
+    tempFirstName[strcspn(tempFirstName, "\n")] = '\0'; // remove newline character
+
+    printf("Enter last name: ");
+    fgets(tempLastName, TEXTSIZE, stdin);
+    tempLastName[strcspn(tempLastName, "\n")] = '\0'; // remove newline character
+
+    node t = *top; // temp node to hold top
+    node tempStack = NULL;
+
+    // pop element, display returned element from pop, then push element to a temp stack
+    while (t != NULL)
+    {
+        node temp = pop(&t);
+        if (strcmp(temp->firstName, tempFirstName) == 0 && strcmp(temp->lastName, tempLastName) == 0)
+        {
+            printf("Enter new height (in cm): ");
+            scanf("%f", &temp->height);
+
+            printf("Enter new weight (in lbs): ");
+            scanf("%f", &temp->weight);
+
+            temp->height /= 100;                                      // convert cm to m
+            temp->weight *= 0.453592;                                 // convert lbs to kg
+            temp->bmi = temp->weight / (temp->height * temp->height); // calculate bmi
+            strcpy(temp->category, categoryBMI(temp->bmi));           // get category
+        }
+        push(&tempStack, temp);
+    }
+
+    // push elements back to original stack
+    while (tempStack != NULL)
+    {
+        node temp = pop(&tempStack);
+        push(&t, temp);
+    }
+
+    printf("Data has been edited. Press any key to continue.\n");
+    getch();
+    return;
+}
+
+/*  function to delete element from stack
+    @param (node *) top
+*/
+void dataDeleteByName(node *top)
+{
+    // check if stack is empty
+    if (isEmpty(top))
+    {
+        printf("Stack is empty. Press any key to continue.\n");
+        getch();
+        return;
+    }
+
+    char tempFirstName[TEXTSIZE];
+    char tempLastName[TEXTSIZE];
+
+    fflush(stdin); // clear input buffer
+    system("cls");
+
+    printf("Enter first name: ");
+    fgets(tempFirstName, TEXTSIZE, stdin);
+    tempFirstName[strcspn(tempFirstName, "\n")] = '\0'; // remove newline character
+
+    printf("Enter last name: ");
+    fgets(tempLastName, TEXTSIZE, stdin);
+    tempLastName[strcspn(tempLastName, "\n")] = '\0'; // remove newline character
+
+    node t = *top; // temp node to hold top
+    node tempStack = NULL;
+
+    // pop element, display returned element from pop, then push element to a temp stack
+    while (t != NULL)
+    {
+        node temp = pop(&t);
+        if (strcmp(temp->firstName, tempFirstName) == 0 && strcmp(temp->lastName, tempLastName) == 0)
+        {
+            printf("Data has been deleted. Press any key to continue.\n");
+            getch();
+            return;
+        }
+        push(&tempStack, temp);
+    }
+
+    // push elements back to original stack
+    while (tempStack != NULL)
+    {
+        node temp = pop(&tempStack);
+        push(&t, temp);
+    }
+
+    *top = t; // update top
+    printf("Data not found. Press any key to continue.\n");
+    getch();
+    return;
+}
+
+/*  function to display top element in stack
+    @param (node *) top
+*/
+void topDisplay(node *top)
+{
+    // check if stack is empty
+    if (isEmpty(top))
+    {
+        printf("Stack is empty. Press any key to continue.\n");
+        getch();
+        return;
+    }
+
+    node temp = peek(top);
+    system("cls");
+
+    printf("\n%-20s%-20s%-20s%-20s%-20s%-20s\n", "First Name", "Last Name", "Height (m)", "Weight (kg)", "BMI", "BMI Category");
+    printf("%-20s%-20s%-20.2f%-20.2f%-20.2f%-20s\n", temp->firstName, temp->lastName, temp->height, temp->weight, temp->bmi, temp->category);
+
+    printf("\nPress any key to continue.\n");
+    getch();
+    return;
+}
+
 /*  function to display all elements in stack
     @param (node *) top
 */
 void dataDisplay(node *top)
 {
-    if (*top == NULL)
+    // check if stack is empty
+    if (isEmpty(top))
     {
-        printf("Stack is empty.\n");
+        printf("Stack is empty. Press any key to continue.\n");
         getch();
         return;
     }
 
-    node temp = *top;
-    while (temp != NULL)
+    // else, display all elements
+    node t = *top; // temp node to hold top
+    node tempStack = NULL;
+    system("cls");
+
+    printf("\n%-20s%-20s%-20s%-20s%-20s%-20s\n", "First Name", "Last Name", "Height (m)", "Weight (kg)", "BMI", "BMI Category");
+
+    // pop element, display returned element from pop, then push element to a temp stack
+    while (t != NULL)
     {
-        printf("Name: %s %s\n", temp->firstName, temp->lastName);
-        printf("Weight: %.2f\n", temp->weight);
-        printf("Height: %.2f\n", temp->height);
-        printf("BMI: %.2f\n", temp->bmi);
-        printf("Category: %s\n", temp->category);
-        printf("\n");
-        temp = temp->next;
+        node temp = pop(&t);
+        printf("%-20s%-20s%-20.2f%-20.2f%-20.2f%-20s\n", temp->firstName, temp->lastName, temp->height, temp->weight, temp->bmi, temp->category);
+        push(&tempStack, temp);
     }
+
+    // push elements back to original stack
+    while (tempStack != NULL)
+    {
+        node temp = pop(&tempStack);
+        push(&t, temp);
+    }
+
+    printf("\nPress any key to continue.\n");
     getch();
     return;
 }
