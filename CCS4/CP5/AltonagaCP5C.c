@@ -1,6 +1,6 @@
 // Name: John Stanley T. Altonaga
-// Date Created: 9/21/2023
-// Date Finished: 9/28/2023
+// Date Created: 10/9/2023
+// Date Finished: 10/12/2023
 /* Description: This program is a BMI calculator implemented with stacks (singly-linked list).
 The program can create a stack, add elements (at head), edit elements, delete elements, display top element, and display all elements.
 */
@@ -27,23 +27,24 @@ struct person
     node next;
 } Person;
 
-void createStack(node *top, bool *isChecked);
-void push(node *top, node data);
-node pop(node *top);
+void createStack(node *stack, node *top, bool *isChecked);
+void push(node *stack, node *top, node data);
+node pop(node *stack, node *top);
 node peek(node *top);
 bool isEmpty(node *top);
 
 int menu(void);
 char *categoryBMI(float bmi);
 
-void dataEntry(node *top);
-void dataEditByName(node *top);
-void dataDeleteByName(node *top);
-void topDisplay(node *top);
-void dataDisplay(node *top);
+void dataEntry(node *stack, node *top);
+void dataEditByName(node *stack, node *top);
+void dataDeleteByName(node *stack, node *top);
+void topDisplay(node *stack, node *top);
+void dataDisplay(node *stack, node *top);
 
 int main(void)
 {
+    node stack = NULL;
     node top = NULL;
     bool isChecked = false;
 
@@ -54,7 +55,7 @@ int main(void)
         switch (choice)
         {
         case 1:
-            createStack(&top, &isChecked);
+            createStack(&stack, &top, &isChecked);
             break;
         case 2:
             // check if stack exists
@@ -64,7 +65,7 @@ int main(void)
                 getch();
                 break;
             }
-            dataEntry(&top);
+            dataEntry(&stack, &top);
             break;
         case 3:
             // check if stack exists
@@ -74,7 +75,7 @@ int main(void)
                 getch();
                 break;
             }
-            dataEditByName(&top);
+            dataEditByName(&stack, &top);
             break;
         case 4:
             // check if stack exists
@@ -84,7 +85,7 @@ int main(void)
                 getch();
                 break;
             }
-            dataDeleteByName(&top);
+            dataDeleteByName(&stack, &top);
             break;
         case 5:
             // check if stack exists
@@ -94,7 +95,7 @@ int main(void)
                 getch();
                 break;
             }
-            topDisplay(&top);
+            topDisplay(&stack, &top);
             break;
         case 6:
             // check if stack exists
@@ -104,7 +105,7 @@ int main(void)
                 getch();
                 break;
             }
-            dataDisplay(&top);
+            dataDisplay(&stack, &top);
             break;
         case 7:
             printf("Exiting the program...\n");
@@ -148,7 +149,7 @@ int menu(void)
     @param (node *) top
     @param (bool *) isChecked
 */
-void createStack(node *top, bool *isChecked)
+void createStack(node *stack, node *top, bool *isChecked)
 {
     // check if stack already exists
     if (*top == NULL && *isChecked == true)
@@ -198,10 +199,11 @@ void createStack(node *top, bool *isChecked)
 /*  function to push element to stack (at head)
     @param (node *) top
 */
-void push(node *top, node data)
+void push(node *stack, node *top, node data)
 {
     data->next = *top; // point node next to current top
     *top = data;       // point top to new node
+    *stack = *top;
     return;
 }
 
@@ -209,10 +211,11 @@ void push(node *top, node data)
     @param (node *) top
     @returns (node) temp
 */
-node pop(node *top)
+node pop(node *stack, node *top)
 {
     node temp = *top;
     *top = (*top)->next;
+    *stack = *top;
     return temp;
 }
 
@@ -238,7 +241,7 @@ bool isEmpty(node *top)
 /*  function to get data from user and push to stack
     @param (node *) top
 */
-void dataEntry(node *top)
+void dataEntry(node *stack, node *top)
 {
     node temp = malloc(sizeof(Person));
     // if malloc fails, exit program
@@ -275,7 +278,7 @@ void dataEntry(node *top)
     temp->bmi = temp->weight / (temp->height * temp->height); // calculate bmi
     strcpy(temp->category, categoryBMI(temp->bmi));           // get category
 
-    push(top, temp); // push to stack
+    push(stack, top, temp); // push to stack
 
     printf("\nData has been added. Press any key to continue.\n");
     getch();
@@ -309,7 +312,7 @@ char *categoryBMI(float bmi)
 /*  function to edit element in stack
     @param (node *) top
 */
-void dataEditByName(node *top)
+void dataEditByName(node *stack, node *top)
 {
     // check if stack is empty
     if (isEmpty(top))
@@ -335,12 +338,13 @@ void dataEditByName(node *top)
 
     node t = *top; // temp node to hold top
     node tempStack = NULL;
+    node tempTop = NULL;  // temp stack top holder
     bool isFound = false; // flag to check if data is found
 
     // pop element, display returned element from pop, then push element to a temp stack
     while (t != NULL)
     {
-        node temp = pop(&t);
+        node temp = pop(stack, &t);
         if (stricmp(temp->firstName, tempFirstName) == 0 && stricmp(temp->lastName, tempLastName) == 0)
         {
             isFound = true;
@@ -376,7 +380,7 @@ void dataEditByName(node *top)
                     strcpy(temp->category, categoryBMI(temp->bmi));           // get category
 
                     // push element back to stack
-                    push(&t, temp);
+                    push(stack, &t, temp);
                     printf("\nData has been edited. Press any key to continue.\n");
                     getch();
                     break;
@@ -384,7 +388,7 @@ void dataEditByName(node *top)
                 if (choice == 'n')
                 {
                     // push element back to stack
-                    push(&t, temp);
+                    push(stack, &t, temp);
                     printf("\nData has not been edited. Press any key to continue.\n");
                     getch();
                     break;
@@ -394,14 +398,14 @@ void dataEditByName(node *top)
             break; // since data is found, break out of loop
         }
         // if data does not match, push element to temp stack
-        push(&tempStack, temp);
+        push(&tempStack, &tempTop, temp);
     }
 
     // push elements back to original stack
     while (tempStack != NULL)
     {
-        node temp = pop(&tempStack);
-        push(&t, temp);
+        node temp = pop(&tempStack, &tempTop);
+        push(stack, &t, temp);
     }
 
     // if data is not found, display message
@@ -413,13 +417,14 @@ void dataEditByName(node *top)
     }
 
     *top = t; // update top
+    *stack = *top;
     return;
 }
 
 /*  function to delete element from stack
     @param (node *) top
 */
-void dataDeleteByName(node *top)
+void dataDeleteByName(node *stack, node *top)
 {
     // check if stack is empty
     if (isEmpty(top))
@@ -445,12 +450,13 @@ void dataDeleteByName(node *top)
 
     node t = *top; // temp node to hold top
     node tempStack = NULL;
+    node tempTop = NULL;  // temp stack top holder
     bool isFound = false; // flag to check if data is found
 
     // pop element, display returned element from pop, then push element to a temp stack
     while (t != NULL)
     {
-        node temp = pop(&t);
+        node temp = pop(stack, &t);
         if (stricmp(temp->firstName, tempFirstName) == 0 && stricmp(temp->lastName, tempLastName) == 0)
         {
             isFound = true;
@@ -481,7 +487,7 @@ void dataDeleteByName(node *top)
                 if (choice == 'n')
                 {
                     // push element back to stack
-                    push(&t, temp);
+                    push(stack, &t, temp);
                     printf("\nData has not been deleted. Press any key to continue.\n");
                     getch();
                     break;
@@ -491,14 +497,14 @@ void dataDeleteByName(node *top)
             break; // since data is found, break out of loop
         }
         // if data does not match, push element to temp stack
-        push(&tempStack, temp);
+        push(&tempStack, &tempTop, temp);
     }
 
     // push elements back to original stack
     while (tempStack != NULL)
     {
-        node temp = pop(&tempStack);
-        push(&t, temp);
+        node temp = pop(&tempStack, &tempTop);
+        push(stack, &t, temp);
     }
 
     // if data is not found, display message
@@ -510,13 +516,14 @@ void dataDeleteByName(node *top)
     }
 
     *top = t; // update top
+    *stack = *top; 
     return;
 }
 
 /*  function to display top element in stack
     @param (node *) top
 */
-void topDisplay(node *top)
+void topDisplay(node *stack, node *top)
 {
     // check if stack is empty
     if (isEmpty(top))
@@ -539,7 +546,7 @@ void topDisplay(node *top)
 /*  function to display all elements in stack
     @param (node *) top
 */
-void dataDisplay(node *top)
+void dataDisplay(node *stack, node *top)
 {
     // check if stack is empty
     if (isEmpty(top))
@@ -552,6 +559,7 @@ void dataDisplay(node *top)
     // else, display all elements
     node t = *top; // temp node to hold top
     node tempStack = NULL;
+    node tempTop = NULL; // temp stack top holder
     system("cls");
 
     printf("\n%-20s%-20s%-20s%-20s%-20s%-20s\n", "First Name", "Last Name", "Height (m)", "Weight (kg)", "BMI", "BMI Category");
@@ -559,16 +567,16 @@ void dataDisplay(node *top)
     // pop element, display returned element from pop, then push element to a temp stack
     while (t != NULL)
     {
-        node temp = pop(&t); // pop element
+        node temp = pop(stack, &t); // pop element
         printf("%-20s%-20s%-20.2f%-20.2f%-20.2f%-20s\n", strupr(temp->firstName), strupr(temp->lastName), temp->height, temp->weight, temp->bmi, temp->category);
-        push(&tempStack, temp); // push element to temp stack
+        push(&tempStack, &tempTop, temp); // push element to temp stack
     }
 
     // push elements back to original stack
     while (tempStack != NULL)
     {
-        node temp = pop(&tempStack);
-        push(&t, temp);
+        node temp = pop(&tempStack, &tempTop);
+        push(stack, &t, temp);
     }
 
     printf("\nPress any key to continue.\n");
