@@ -12,7 +12,6 @@ The program can create a stack, add elements (at head), edit elements, delete el
 #include <stdbool.h>
 #include <conio.h>
 
-#define STACKSIZE 10
 #define TEXTSIZE 50
 
 typedef struct person *node;
@@ -516,7 +515,7 @@ void dataDeleteByName(node *stack, node *top)
     }
 
     *top = t; // update top
-    *stack = *top; 
+    *stack = *top;
     return;
 }
 
