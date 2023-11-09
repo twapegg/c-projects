@@ -1,6 +1,6 @@
 // Name: John Stanley T. Altonaga
 // Date Created: 10/9/2023
-// Date Finished: 10/12/2023
+// Date Finished: 11/9/2023
 /* Description: This program is a BMI calculator implemented with queues (singly-linked list).
 It can create a queue, add elements (at tail) to the queue, edit elements, delete elements, and display all elements in the queue. */
 
@@ -356,7 +356,7 @@ void dataEditByName(node *queue, node *front, node *rear)
     fgets(tempLastName, TEXTSIZE, stdin);
     tempLastName[strcspn(tempLastName, "\n")] = '\0'; // remove newline character
 
-    node f = *front; // temp node to hold top
+    node f = *front; // temp node to hold front
     node tempQueue = NULL;
     node tempFront = NULL;
     node tempRear = NULL;
@@ -394,16 +394,16 @@ void dataEditByName(node *queue, node *front, node *rear)
                     temp->bmi = temp->weight / (temp->height * temp->height); // calculate bmi
                     strcpy(temp->category, categoryBMI(temp->bmi));           // get category
 
-                    // enqueue element back to queue
-                    enqueue(queue, &f, rear, temp);
+                    // enqueue element to temp queue
+                    enqueue(&tempQueue, &tempFront, &tempRear, temp);
                     printf("\nData has been edited. Press any key to continue.\n");
                     getch();
                     break;
                 }
                 if (choice == 'n')
                 {
-                    // enqueue element back to queue
-                    enqueue(queue, &f, rear, temp);
+                    // enqueue element to temp queue
+                    enqueue(&tempQueue, &tempFront, &tempRear, temp);
                     printf("\nData has not been edited. Press any key to continue.\n");
                     getch();
                     break;
@@ -413,10 +413,11 @@ void dataEditByName(node *queue, node *front, node *rear)
                     printf("Invalid option. Please enter a valid option.\n");
                 }
             } while (choice != 'y' && choice != 'n');
-            break; // since data is found, break out of loop
         }
-
-        enqueue(&tempQueue, &tempFront, &tempRear, temp);
+        else
+        {
+            enqueue(&tempQueue, &tempFront, &tempRear, temp);
+        }
     }
 
     // enqueue elements back to original queue
@@ -434,8 +435,7 @@ void dataEditByName(node *queue, node *front, node *rear)
         return;
     }
 
-    *front = f; // update top
-    *queue = *front;
+    *front = *queue = f; // update front and queue
     return;
 }
 
@@ -468,7 +468,7 @@ void dataDeleteByName(node *queue, node *front, node *rear)
     fgets(tempLastName, TEXTSIZE, stdin);
     tempLastName[strcspn(tempLastName, "\n")] = '\0'; // remove newline character
 
-    node f = *front; // temp node to hold top
+    node f = *front; // temp node to hold front
     node tempQueue = NULL;
     node tempFront = NULL;
     node tempRear = NULL;
@@ -503,8 +503,8 @@ void dataDeleteByName(node *queue, node *front, node *rear)
                 }
                 if (choice == 'n')
                 {
-                    // enqueue element back to queue
-                    enqueue(queue, &f, rear, temp);
+                    // enqueue element to temp queue
+                    enqueue(&tempQueue, &tempFront, &tempRear, temp);
                     printf("\nData has not been edited. Press any key to continue.\n");
                     getch();
                     break;
@@ -514,9 +514,11 @@ void dataDeleteByName(node *queue, node *front, node *rear)
                     printf("Invalid option. Please enter a valid option.\n");
                 }
             } while (choice != 'y' && choice != 'n');
-            break; // since data is found, break out of loop
         }
-        enqueue(&tempQueue, &tempFront, &tempRear, temp);
+        else
+        {
+            enqueue(&tempQueue, &tempFront, &tempRear, temp);
+        }
     }
 
     // enqueue elements back to original queue
@@ -534,8 +536,7 @@ void dataDeleteByName(node *queue, node *front, node *rear)
         return;
     }
 
-    *front = f; // update front
-    *queue = *front;
+    *front = *queue = f; // update front and queue
     return;
 }
 
